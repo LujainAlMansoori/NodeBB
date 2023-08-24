@@ -64,22 +64,25 @@ function getActiveRewards() {
 //
 rewards.save = function (data) {
     return __awaiter(this, void 0, void 0, function* () {
-        function save(data) {
-            return __awaiter(this, void 0, void 0, function* () {
-                if (!Object.keys(data.rewards).length) {
-                    return;
-                }
-                const rewardsData = data.rewards;
-                delete data.rewards;
-                if (!parseInt(data.id, 10)) {
-                    data.id = yield db.incrObjectField('global', 'rewards:id');
-                }
-                yield rewards.delete(data);
-                yield db.setAdd('rewards:list', data.id);
-                yield db.setObject(`rewards:id:${data.id}`, data);
-                yield db.setObject(`rewards:id:${data.id}:rewards`, rewardsData);
-            });
-        }
+        const save = (data) => __awaiter(this, void 0, void 0, function* () {
+            if (!Object.keys(data.rewards).length) {
+                return; // return data as it is if no rewards are present
+            }
+            const rewardsData = data.rewards;
+            delete data.rewards;
+            if (!parseInt(data.id, 10)) {
+                data.id = (yield db.incrObjectField('global', 'rewards:id'));
+            }
+            yield rewards.delete(data);
+            yield db.setAdd('rewards:list', data.id);
+            yield db.setObject(`rewards:id:${data.id}`, data);
+            yield db.setObject(`rewards:id:${data.id}:rewards`, rewardsData);
+            // data.rewards = rewardsData; // add back the rewards to data
+            // return data;
+        });
+        // const savedData = await Promise.all(data.map(save));
+        // await rewards.saveConditions(data);
+        // return savedData;
         yield Promise.all(data.map(data => save(data)));
         yield saveConditions(data);
         return data;

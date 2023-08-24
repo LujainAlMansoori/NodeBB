@@ -36,29 +36,34 @@ async function getActiveRewards(): Promise<RewardData[]> {
     const rewardData: (RewardData | null)[] = await Promise.all(rewardsList.map(id => load(id)));
     return rewardData.filter(Boolean);
 }
+
 //
 
-
-rewards.save = async function (data) {
-    async function save(data) {
+rewards.save = async function (data: SaveInput): Promise<RewardData[]> {
+    const save = async (data: RewardData): Promise<RewardData> => {
         if (!Object.keys(data.rewards).length) {
-            return;
+            return; // return data as it is if no rewards are present
         }
         const rewardsData = data.rewards;
         delete data.rewards;
-        if (!parseInt(data.id, 10)) {
-            data.id = await db.incrObjectField('global', 'rewards:id');
+        if (!parseInt(data.id as string, 10)) {
+            data.id = await db.incrObjectField('global', 'rewards:id') as number;
         }
         await rewards.delete(data);
-        await db.setAdd('rewards:list', data.id);
+        await db.setAdd('rewards:list', data.id as string);
         await db.setObject(`rewards:id:${data.id}`, data);
         await db.setObject(`rewards:id:${data.id}:rewards`, rewardsData);
-    }
-
+        // data.rewards = rewardsData; // add back the rewards to data
+        // return data;
+    };
+    // const savedData = await Promise.all(data.map(save));
+    // await rewards.saveConditions(data);
+    // return savedData;
     await Promise.all(data.map(data => save(data)));
     await saveConditions(data);
     return data;
 };
+
 
 rewards.delete = async function (data) {
     await Promise.all([
