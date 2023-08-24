@@ -1,8 +1,43 @@
 import * as plugins from '../plugins';
 import * as db from '../database';
 import * as utils from '../utils';
-//
+
 const rewards = module.exports;
+
+type RewardData = {
+    id?: string | number;
+    rewards: { [key: string]: string };
+    condition: string;
+    disabled?: boolean | string;
+};
+
+type RewardsType = { [key: string]: string };
+type SaveInput = RewardData[];
+
+async function getActiveRewards(): Promise<RewardData[]> {
+    async function load(id: string | number): Promise<RewardData | null> {
+        const [main, rewards] = await Promise.all([
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+            db.getObject(`rewards:id:${id}`),
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+            db.getObject(`rewards:id:${id}:rewards`),
+        ]) as [RewardData | null, RewardsType | null];
+
+        if (main) {
+            main.disabled = main.disabled === 'true';
+            main.rewards = rewards || {};
+            return main;
+        }
+        return null;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+    const rewardsList: (string | number)[] = await db.getSetMembers('rewards:list') as string[];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+    const rewardData: (RewardData | null)[] = await Promise.all(rewardsList.map(id => load(id)));
+    return rewardData.filter(Boolean);
+}
+//
+
 
 rewards.save = async function (data) {
     async function save(data) {
@@ -58,22 +93,6 @@ async function saveConditions(data) {
     await Promise.all(Object.keys(rewardsPerCondition).map(c => db.setAdd(`condition:${c}:rewards`, rewardsPerCondition[c])));
 }
 
-async function getActiveRewards() {
-    async function load(id) {
-        const [main, rewards] = await Promise.all([
-            db.getObject(`rewards:id:${id}`),
-            db.getObject(`rewards:id:${id}:rewards`),
-        ]);
-        if (main) {
-            main.disabled = main.disabled === 'true';
-            main.rewards = rewards;
-        }
-        return main;
-    }
 
-    const rewardsList = await db.getSetMembers('rewards:list');
-    const rewardData = await Promise.all(rewardsList.map(id => load(id)));
-    return rewardData.filter(Boolean);
-}
 
 require('../promisify')(rewards);

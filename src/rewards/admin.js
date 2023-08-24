@@ -35,8 +35,33 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const plugins = __importStar(require("../plugins"));
 const db = __importStar(require("../database"));
 const utils = __importStar(require("../utils"));
-//
 const rewards = module.exports;
+function getActiveRewards() {
+    return __awaiter(this, void 0, void 0, function* () {
+        function load(id) {
+            return __awaiter(this, void 0, void 0, function* () {
+                const [main, rewards] = yield Promise.all([
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+                    db.getObject(`rewards:id:${id}`),
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+                    db.getObject(`rewards:id:${id}:rewards`),
+                ]);
+                if (main) {
+                    main.disabled = main.disabled === 'true';
+                    main.rewards = rewards || {};
+                    return main;
+                }
+                return null;
+            });
+        }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+        const rewardsList = yield db.getSetMembers('rewards:list');
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+        const rewardData = yield Promise.all(rewardsList.map(id => load(id)));
+        return rewardData.filter(Boolean);
+    });
+}
+//
 rewards.save = function (data) {
     return __awaiter(this, void 0, void 0, function* () {
         function save(data) {
@@ -91,26 +116,6 @@ function saveConditions(data) {
         });
         yield db.setAdd('conditions:active', conditions);
         yield Promise.all(Object.keys(rewardsPerCondition).map(c => db.setAdd(`condition:${c}:rewards`, rewardsPerCondition[c])));
-    });
-}
-function getActiveRewards() {
-    return __awaiter(this, void 0, void 0, function* () {
-        function load(id) {
-            return __awaiter(this, void 0, void 0, function* () {
-                const [main, rewards] = yield Promise.all([
-                    db.getObject(`rewards:id:${id}`),
-                    db.getObject(`rewards:id:${id}:rewards`),
-                ]);
-                if (main) {
-                    main.disabled = main.disabled === 'true';
-                    main.rewards = rewards;
-                }
-                return main;
-            });
-        }
-        const rewardsList = yield db.getSetMembers('rewards:list');
-        const rewardData = yield Promise.all(rewardsList.map(id => load(id)));
-        return rewardData.filter(Boolean);
     });
 }
 require('../promisify')(rewards);
