@@ -8,17 +8,16 @@ interface MessageData {
   fromuid: number;
   timestamp: number;
   system: boolean;
-  [key: string]: any; 
 }
 
 interface Messaging {
-  getMessageField(mid: number, field: string): Promise<string>; // Add this line
+  getMessageField(mid: number, field: string): Promise<string>;
   getMessageFields(mid: number, fields: string[]): Promise<MessageData>;
   editMessage(uid: number, mid: number, roomId: number, content: string): Promise<void>;
   canEdit(messageId: number, uid: number): Promise<void>;
   canDelete(messageId: number, uid: number): Promise<void>;
   checkContent(content: string): Promise<void>;
-  setMessageFields(mid: number, payload: any): Promise<void>;
+  setMessageFields(mid: number, payload: payloadInt): Promise<void>;
   getUidsInRoom(
     roomId: number,
     start: number,
@@ -29,19 +28,24 @@ interface Messaging {
     uid: number,
     roomId: number,
     flag: boolean
-  ): Promise<any[]>;
+  ): Promise<string[]>;
   messageExists(mid: number): Promise<boolean>;
+}
+
+interface payloadInt {
+    content: string;
+    edited: string;
 }
 
 export = function (Messaging: Messaging) {
     Messaging.editMessage = async (uid, mid, roomId, content) => {
         await Messaging.checkContent(content);
-        const raw = await Messaging.getMessageField(mid, 'content');
+        const raw: string = await Messaging.getMessageField(mid, 'content');
         if (raw === content) {
             return;
         }
-
-        const payload = await plugins.hooks.fire('filter:messaging.edit', {
+        //
+        const payload: payloadInt = await plugins.hooks.fire('filter:messaging.edit', {
             content: content,
             edited: Date.now(),
         });
@@ -63,7 +67,7 @@ export = function (Messaging: Messaging) {
             });
         });
     };
-
+//////
     const canEditDelete = async (messageId, uid, type) => {
         let durationConfig = '';
         if (type === 'edit') {

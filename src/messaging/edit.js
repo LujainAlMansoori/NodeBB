@@ -23,6 +23,7 @@ module.exports = function (Messaging) {
         if (raw === content) {
             return;
         }
+        //
         const payload = yield plugins_1.default.hooks.fire('filter:messaging.edit', {
             content: content,
             edited: Date.now(),
@@ -42,6 +43,7 @@ module.exports = function (Messaging) {
             });
         });
     });
+    //////
     const canEditDelete = (messageId, uid, type) => __awaiter(this, void 0, void 0, function* () {
         let durationConfig = '';
         if (type === 'edit') {
