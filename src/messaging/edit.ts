@@ -125,12 +125,12 @@ export = function (Messaging: Messaging) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             throw new Error(`[[error:chat-${type as number}-duration-expired, ${meta.config[durationConfig] as number}]]`);
         }
-
-        if (messageData.fromuid === parseInt(uid, 10) && !messageData.system) {
+        // Added type number
+        if (messageData.fromuid === parseInt(uid as string, 10) && !messageData.system) {
             return;
         }
 
-        throw new Error(`[[error:cant-${type}-chat-message]]`);
+        throw new Error(`[[error:cant-${type as number}-chat-message]]`);
     };
 
     Messaging.canEdit = async (messageId, uid) => await canEditDelete(messageId, uid, 'edit');

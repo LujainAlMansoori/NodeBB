@@ -94,6 +94,7 @@ module.exports = function (Messaging) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             throw new Error(`[[error:chat-${type}-duration-expired, ${meta_1.default.config[durationConfig]}]]`);
         }
+        // Added type number
         if (messageData.fromuid === parseInt(uid, 10) && !messageData.system) {
             return;
         }
