@@ -4,7 +4,7 @@ import plugins from '../plugins';
 import privileges from '../privileges';
 import sockets from '../socket.io';
 
-// Added three interfaces
+// Added  interfaces
 interface MessageData {
   fromuid: number;
   timestamp: number;
@@ -36,6 +36,10 @@ interface Messaging {
 interface payloadInt {
     content: string;
     edited: string;
+}
+
+interface UserDataType {
+    banned: boolean;
 }
 
 export = function (Messaging: Messaging) {
@@ -82,26 +86,27 @@ export = function (Messaging: Messaging) {
         }
         // Added type number
         const exists = await Messaging.messageExists(messageId as number);
-        // 
         if (!exists) {
             throw new Error('[[error:invalid-mid]]');
         }
-        
         // Added string and number and string types
         const isAdminOrGlobalMod: string = await user.isAdminOrGlobalMod(uid as number) as string;
-
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         if (meta.config.disableChat) {
             throw new Error('[[error:chat-disabled]]');
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         } else if (!isAdminOrGlobalMod && meta.config.disableChatMessageEditing) {
             throw new Error('[[error:chat-message-editing-disabled]]');
         }
-
-        const userData = await user.getUserFields(uid, ['banned']);
+        // Added the comment and UserDataType twice, with number casting
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        const userData: UserDataType = await user.getUserFields(uid as number, ['banned']) as UserDataType;
         if (userData.banned) {
             throw new Error('[[error:user-banned]]');
         }
-
-        const canChat = await privileges.global.can('chat', uid);
+        // Added the comment and boolean and umber casting
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const canChat: boolean = await privileges.global.can('chat', uid as number);
         if (!canChat) {
             throw new Error('[[error:no-privileges]]');
         }

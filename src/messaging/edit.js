@@ -56,22 +56,26 @@ module.exports = function (Messaging) {
         }
         // Added type number
         const exists = yield Messaging.messageExists(messageId);
-        // 
         if (!exists) {
             throw new Error('[[error:invalid-mid]]');
         }
         // Added string and number and string types
         const isAdminOrGlobalMod = yield user_1.default.isAdminOrGlobalMod(uid);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         if (meta_1.default.config.disableChat) {
             throw new Error('[[error:chat-disabled]]');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         }
         else if (!isAdminOrGlobalMod && meta_1.default.config.disableChatMessageEditing) {
             throw new Error('[[error:chat-message-editing-disabled]]');
         }
+        // Added the comment and UserDataType twice, with number casting
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         const userData = yield user_1.default.getUserFields(uid, ['banned']);
         if (userData.banned) {
             throw new Error('[[error:user-banned]]');
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const canChat = yield privileges_1.default.global.can('chat', uid);
         if (!canChat) {
             throw new Error('[[error:no-privileges]]');
