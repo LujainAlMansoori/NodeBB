@@ -19,15 +19,17 @@ const socket_io_1 = __importDefault(require("../socket.io"));
 module.exports = function (Messaging) {
     Messaging.editMessage = (uid, mid, roomId, content) => __awaiter(this, void 0, void 0, function* () {
         yield Messaging.checkContent(content);
+        // Added the type string
         const raw = yield Messaging.getMessageField(mid, 'content');
         if (raw === content) {
             return;
         }
-        //
+        // Added the type payloadInt
         const payload = yield plugins_1.default.hooks.fire('filter:messaging.edit', {
             content: content,
             edited: Date.now(),
         });
+        //
         if (!String(payload.content).trim()) {
             throw new Error('[[error:invalid-chat-message]]');
         }
@@ -38,12 +40,12 @@ module.exports = function (Messaging) {
             Messaging.getMessagesData([mid], uid, roomId, true),
         ]);
         uids.forEach((uid) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             socket_io_1.default.in(`uid_${uid}`).emit('event:chats.edit', {
                 messages: messages,
             });
         });
     });
-    //////
     const canEditDelete = (messageId, uid, type) => __awaiter(this, void 0, void 0, function* () {
         let durationConfig = '';
         if (type === 'edit') {
@@ -52,10 +54,13 @@ module.exports = function (Messaging) {
         else if (type === 'delete') {
             durationConfig = 'chatDeleteDuration';
         }
+        // Added type number
         const exists = yield Messaging.messageExists(messageId);
+        // 
         if (!exists) {
             throw new Error('[[error:invalid-mid]]');
         }
+        // Added string and number and string types
         const isAdminOrGlobalMod = yield user_1.default.isAdminOrGlobalMod(uid);
         if (meta_1.default.config.disableChat) {
             throw new Error('[[error:chat-disabled]]');

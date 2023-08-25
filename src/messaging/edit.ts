@@ -4,6 +4,7 @@ import plugins from '../plugins';
 import privileges from '../privileges';
 import sockets from '../socket.io';
 
+// Added three interfaces
 interface MessageData {
   fromuid: number;
   timestamp: number;
@@ -40,15 +41,19 @@ interface payloadInt {
 export = function (Messaging: Messaging) {
     Messaging.editMessage = async (uid, mid, roomId, content) => {
         await Messaging.checkContent(content);
+        // Added the type string
         const raw: string = await Messaging.getMessageField(mid, 'content');
         if (raw === content) {
             return;
         }
-        //
-        const payload: payloadInt = await plugins.hooks.fire('filter:messaging.edit', {
+
+        // Added the type payloadInt
+        const payload = await plugins.hooks.fire('filter:messaging.edit', {
             content: content,
             edited: Date.now(),
-        });
+        }) as payloadInt;
+
+        //
 
         if (!String(payload.content).trim()) {
             throw new Error('[[error:invalid-chat-message]]');
@@ -62,12 +67,12 @@ export = function (Messaging: Messaging) {
         ]);
 
         uids.forEach((uid) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             sockets.in(`uid_${uid}`).emit('event:chats.edit', {
                 messages: messages,
             });
         });
     };
-//////
     const canEditDelete = async (messageId, uid, type) => {
         let durationConfig = '';
         if (type === 'edit') {
@@ -75,13 +80,15 @@ export = function (Messaging: Messaging) {
         } else if (type === 'delete') {
             durationConfig = 'chatDeleteDuration';
         }
-
-        const exists = await Messaging.messageExists(messageId);
+        // Added type number
+        const exists = await Messaging.messageExists(messageId as number);
+        // 
         if (!exists) {
             throw new Error('[[error:invalid-mid]]');
         }
-
-        const isAdminOrGlobalMod = await user.isAdminOrGlobalMod(uid);
+        
+        // Added string and number and string types
+        const isAdminOrGlobalMod: string = await user.isAdminOrGlobalMod(uid as number) as string;
 
         if (meta.config.disableChat) {
             throw new Error('[[error:chat-disabled]]');
