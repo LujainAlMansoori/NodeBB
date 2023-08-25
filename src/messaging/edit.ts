@@ -111,14 +111,19 @@ export = function (Messaging: Messaging) {
             throw new Error('[[error:no-privileges]]');
         }
 
-        const messageData = await Messaging.getMessageFields(messageId, ['fromuid', 'timestamp', 'system']);
+        // Added type number
+        const messageData = await Messaging.getMessageFields(messageId as number, ['fromuid', 'timestamp', 'system']);
         if (isAdminOrGlobalMod && !messageData.system) {
             return;
         }
 
-        const chatConfigDuration = meta.config[durationConfig];
+        // Added type number twice
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+        const chatConfigDuration: number = meta.config[durationConfig] as number;
         if (chatConfigDuration && Date.now() - messageData.timestamp > chatConfigDuration * 1000) {
-            throw new Error(`[[error:chat-${type}-duration-expired, ${meta.config[durationConfig]}]]`);
+            // Added the comment and number type
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+            throw new Error(`[[error:chat-${type as number}-duration-expired, ${meta.config[durationConfig] as number}]]`);
         }
 
         if (messageData.fromuid === parseInt(uid, 10) && !messageData.system) {

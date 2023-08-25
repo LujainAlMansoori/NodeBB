@@ -75,17 +75,23 @@ module.exports = function (Messaging) {
         if (userData.banned) {
             throw new Error('[[error:user-banned]]');
         }
+        // Added the comment and boolean and umber casting
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const canChat = yield privileges_1.default.global.can('chat', uid);
         if (!canChat) {
             throw new Error('[[error:no-privileges]]');
         }
+        // Added type number
         const messageData = yield Messaging.getMessageFields(messageId, ['fromuid', 'timestamp', 'system']);
         if (isAdminOrGlobalMod && !messageData.system) {
             return;
         }
+        // Added type number twice
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         const chatConfigDuration = meta_1.default.config[durationConfig];
         if (chatConfigDuration && Date.now() - messageData.timestamp > chatConfigDuration * 1000) {
+            // Added the comment and number type
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             throw new Error(`[[error:chat-${type}-duration-expired, ${meta_1.default.config[durationConfig]}]]`);
         }
         if (messageData.fromuid === parseInt(uid, 10) && !messageData.system) {
